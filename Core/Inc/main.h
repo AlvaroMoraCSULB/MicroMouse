@@ -59,30 +59,44 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define PT1_Pin GPIO_PIN_0
-#define PT1_GPIO_Port GPIOA
-#define PT5_Pin GPIO_PIN_1
-#define PT5_GPIO_Port GPIOA
-#define LM1_Pin GPIO_PIN_2
-#define LM1_GPIO_Port GPIOA
-#define LM2_Pin GPIO_PIN_3
-#define LM2_GPIO_Port GPIOA
-#define IR2_Pin GPIO_PIN_4
-#define IR2_GPIO_Port GPIOA
-#define IR3_Pin GPIO_PIN_6
-#define IR3_GPIO_Port GPIOA
-#define IR1_Pin GPIO_PIN_4
-#define IR1_GPIO_Port GPIOC
-#define PT3_Pin GPIO_PIN_5
-#define PT3_GPIO_Port GPIOC
-#define PT1B0_Pin GPIO_PIN_0
-#define PT1B0_GPIO_Port GPIOB
-#define PT2_Pin GPIO_PIN_1
-#define PT2_GPIO_Port GPIOB
+#define PT_1_Pin GPIO_PIN_0
+#define PT_1_GPIO_Port GPIOA
+#define PT_5_Pin GPIO_PIN_1
+#define PT_5_GPIO_Port GPIOA
+#define LM_1_Pin GPIO_PIN_2
+#define LM_1_GPIO_Port GPIOA
+#define LM_2_Pin GPIO_PIN_3
+#define LM_2_GPIO_Port GPIOA
+#define IR_4_Pin GPIO_PIN_4
+#define IR_4_GPIO_Port GPIOA
+#define IR_3_Pin GPIO_PIN_5
+#define IR_3_GPIO_Port GPIOA
+#define IR_2_Pin GPIO_PIN_6
+#define IR_2_GPIO_Port GPIOA
+#define IR_1_Pin GPIO_PIN_7
+#define IR_1_GPIO_Port GPIOA
+#define IR_5_Pin GPIO_PIN_4
+#define IR_5_GPIO_Port GPIOC
+#define PT_2_Pin GPIO_PIN_5
+#define PT_2_GPIO_Port GPIOC
+#define PT_3_Pin GPIO_PIN_0
+#define PT_3_GPIO_Port GPIOB
+#define PT_4_Pin GPIO_PIN_1
+#define PT_4_GPIO_Port GPIOB
+#define MCU_LED_Pin GPIO_PIN_13
+#define MCU_LED_GPIO_Port GPIOB
+#define LE_A_Pin GPIO_PIN_6
+#define LE_A_GPIO_Port GPIOC
 #define RM_1_Pin GPIO_PIN_8
 #define RM_1_GPIO_Port GPIOA
 #define RM_2_Pin GPIO_PIN_9
 #define RM_2_GPIO_Port GPIOA
+#define LE_B_Pin GPIO_PIN_5
+#define LE_B_GPIO_Port GPIOB
+#define RE_A_Pin GPIO_PIN_6
+#define RE_A_GPIO_Port GPIOB
+#define RE_B_Pin GPIO_PIN_7
+#define RE_B_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

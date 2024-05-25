@@ -21,7 +21,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "distance.h"
 #include "motors.h"
 /* USER CODE END Includes */
 
@@ -76,6 +75,39 @@ uint16_t speed = 1;
 volatile uint16_t rxdata[5] = {0};
 uint16_t ir_data[5] = {0};
 
+uint16_t encoderCounterTimer3 = 0;
+uint16_t encoderCounterTimer4 = 0;
+
+//timer handler handles this
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM3) {
+        // Handle Timer 3 encoder input
+    	encoderCounterTimer3 = __HAL_TIM_GET_COUNTER(htim);
+    }
+    else if (htim->Instance == TIM4) {
+        // Handle Timer 4 encoder input
+    	encoderCounterTimer4 = __HAL_TIM_GET_COUNTER(htim);
+    }
+}
+// proto type code for wheels
+//void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+//{
+//    if (htim->Instance == TIM3) {
+//        encoderCounterTimer3 += __HAL_TIM_GET_COUNTER(htim);
+//        if (encoderCounterTimer3 >= counts_per_revolution) {
+//            encoderCounterTimer3 %= counts_per_revolution;
+//            wheel_distance_traveled_timer3 = C1 * (encoderCounterTimer3 / counts_per_revolution); // calculate distance traveled for Timer 3
+//        }
+//    } else if (htim->Instance == TIM4) {
+//        encoderCounterTimer4 += __HAL_TIM_GET_COUNTER(htim);
+//        if (encoderCounterTimer4 >= counts_per_revolution) {
+//            encoderCounterTimer4 %= counts_per_revolution;
+//            wheel_distance_traveled_timer4 = C2 * (encoderCounterTimer4 / counts_per_revolution); // calculate distance traveled for Timer 4
+//        }
+//    }
+//
+//}
 /* USER CODE END 0 */
 
 /**
@@ -92,7 +124,18 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+
+
+
+
+
+
+
+
+
+
+
+   	HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -129,7 +172,7 @@ int main(void)
   __HAL_TIM_SET_COMPARE(&htim9, TIM_CHANNEL_2, 0);
   HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
 
-  HAL_ADC_Start_DMA(&hadc1, ir_data, 5); // adc handler initialization
+  HAL_ADC_Start_DMA(&hadc1, (uint16_t*)ir_data[0], 5); // adc handler initialization
   ADC1->CR2 |= ADC_CR2_DDS;
 
   /*
@@ -139,9 +182,6 @@ int main(void)
    Motor lmotor;
    init_default_motor(&rmotor, &htim1, TIM_CHANNEL_2, &htim1, TIM_CHANNEL_1);
    init_default_motor(&lmotor, &htim9, TIM_CHANNEL_1, &htim9, TIM_CHANNEL_2);
-
-   //adc from brody :)
-   DistanceInit(&hadc1, &hdma_adc1);
 
    //drive_motor(&rmotor, rdir);
    //drive_motor(&lmotor, ldir);
@@ -154,82 +194,114 @@ int main(void)
   /* USER CODE BEGIN WHILE */
    // Set speed in while loop.
    // No hard-coding out of while loop or else robot will run at same speed if outside while loop.
-  while (1)
-  {
+   /* Infinite loop */
+   /* USER CODE BEGIN WHILE */
+   // Set speed in while loop.
+   // No hard-coding out of while loop or else robot will run at same speed if outside while loop.
+   /* Infinite loop */
+   /* USER CODE BEGIN WHILE */
+   // Set speed in while loop.
+   // No hard-coding out of while loop or else robot will run at same speed if outside while loop.
+   while (1)
+   {
+     // stop once forward sensor is detected
+//     if((ir_data[3] >= 300) && (ir_data[4] >= 300)) {
+//       // Stop both motors
+//       drive_motor(&rmotor, 0);
+//       drive_motor(&lmotor, 0);
+//
+//       HAL_Delay(1000); // Pause for 1 seconds
+//
+//       // Perform a 90-degree right turn
+//       float rdir = -0.75; // Keep right motor moving forward
+//       float ldir = 0.75; // Reverse left motor to turn right
+//
+//       drive_motor(&rmotor, rdir);
+//       drive_motor(&lmotor, ldir);
+//
+//       HAL_Delay(350); // Adjust this delay to achieve a 90-degree turn
+//
+//       // Stop both motors after the turn
+//       drive_motor(&rmotor, 0);
+//       drive_motor(&lmotor, 0);
+//
+//       HAL_Delay(1000); // Pause for 1 seconds
+//
+//       // Continue moving forward
+//       rdir = 0.75;
+//       ldir = 0.75;
+//
+//       drive_motor(&rmotor, rdir);
+//       drive_motor(&lmotor, ldir);
+//
+//     }
+//     else {
+//       // Continue moving forward
+//       float rdir = 0.75;
+//       float ldir = 0.75;
+//
+//       drive_motor(&rmotor, rdir);
+//       drive_motor(&lmotor, ldir);
+//     }
 
+     HAL_GPIO_WritePin(GPIOA, IR_2_Pin|IR_1_Pin|IR_3_Pin|IR_4_Pin, SET);
+     HAL_GPIO_WritePin(GPIOC, IR_1_Pin|IR_5_Pin, SET);
 
-	  // forward
-	   float rdir = 0.6;
-	   float ldir = 0.6;
+     /* USER CODE END WHILE */
 
-	  drive_motor(&rmotor, rdir);
-	  drive_motor(&lmotor, ldir);
+     /* USER CODE BEGIN 3 */
+   }
 
-	  // delay
-	  HAL_Delay(5000);
-	  rdir = 0.5;
-	  ldir = 0.8;
-
-	  drive_motor(&rmotor, rdir);
-	  drive_motor(&lmotor, ldir);
-
-	  HAL_Delay(5000);
-
-
-
-//	  rdir = -0.6;
-//	  ldir = -0.6;
+//   void pid_loop() {
+//       // Define your setpoint (e.g., desired speed or position)
+//       float setpoint = 0.5; // adjust this value as needed
 //
-//	  drive_motor(&rmotor, rdir);
-//	  drive_motor(&lmotor, ldir);
+//       // Get the current encoder counts for each motor
+//       uint16_t r_encoder = __HAL_TIM_GET_COUNTER(&encoderCounterTimer3);
+//       uint16_t l_encoder = __HAL_TIM_GET_COUNTER(&encoderCounterTimer4);
 //
-//	  HAL_Delay(5000);
+//       // Calculate errors
+//       float error_r = setpoint - (r_encoder / C1); // adjust this calculation based on your encoder setup
+//       float error_l = setpoint - (l_encoder / C2); // adjust this calculation based on your encoder setup
 //
-//	  rdir = -0.6;
-//	  ldir = 0.6;
+//       // PID calculations for each motor
+//       float P_r = error_r * p_gain;
+//       float I_r = integral_error_r + (error_r * i_gain);
+//       float D_r = derivative_error_r; // calculate derivative using previous errors and time delta
 //
-//	  drive_motor(&rmotor, rdir);
-//	  drive_motor(&lmotor, ldir);
+//       float P_l = error_l * p_gain;
+//       float I_l = integral_error_l + (error_l * i_gain);
+//       float D_l = derivative_error_l; // calculate derivative using previous errors and time delta
 //
-//	  HAL_Delay(5000);
+//       // Calculate output values
+//       float output_r = P_r + I_r + D_r;
+//       float output_l = P_l + I_l + D_l;
 //
-//	  rdir = 0.6;
-//	  ldir = -0.6;
+//       // Scale output values to motor direction (0-1 range)
+//       float rdir = map(output_r, 0, 1); // adjust this mapping as needed
+//       float ldir = map(output_l, 0, 1);
 //
-//	  drive_motor(&rmotor, rdir);
-//	  drive_motor(&lmotor, ldir);
+//       // Apply the calculated output values
+//       drive_motor(&rmotor, rdir);
+//       drive_motor(&lmotor, ldir);
+//   }
 //
-//	  HAL_Delay(5000);
-//
-//
-//
-//	  HAL_GPIO_WritePin(GPIOA, IR2_Pin|IR1_Pin|IR3_Pin|IR4_Pin, SET);
-//	  HAL_GPIO_WritePin(GPIOC, IR1_Pin, SET);
-//
-//	  rdir = -0.6;
-//	  ldir = 0.6;
-//
-//	  drive_motor(&rmotor, rdir);
-//	  drive_motor(&lmotor, ldir);
-//	  HAL_Delay(2000);
-//
-//	  rdir = 0.6;
-//	  ldir = -0.6;
-//
-//	  drive_motor(&rmotor, rdir);
-//	  drive_motor(&lmotor, ldir);
-//	  HAL_Delay(5000);
-
-
-
-	  //HAL_GPIO_WritePin(GPIOA, IR2_Pin|IR1_Pin|IR3_Pin|IR4_Pin , RESET);
-	  //HAL_GPIO_WritePin(GPIOC, IR5_Pin, RESET);
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+//   // In your main loop or timer callback:
+//   void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
+//       switch(htim->Instance) {
+//           case TIM3: // Timer 3 encoder input
+//               // Update PID loop with new encoder count for right motor
+//               pid_loop();
+//               break;
+//           case TIM4: // Timer 4 encoder input
+//               // Update PID loop with new encoder count for left motor
+//               pid_loop();
+//               break;
+//       }
+//   }
+   /* USER CODE END 3 */
 }
+
 
 /**
   * @brief System Clock Configuration
@@ -611,27 +683,27 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, IR2_Pin|IR3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, IR_4_Pin|IR_3_Pin|IR_2_Pin|IR_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(IR1_GPIO_Port, IR1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(IR_5_GPIO_Port, IR_5_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : IR2_Pin IR3_Pin */
-  GPIO_InitStruct.Pin = IR2_Pin|IR3_Pin;
+  /*Configure GPIO pins : IR4_Pin IR3_Pin IR2_Pin IR1_Pin */
+  GPIO_InitStruct.Pin = IR_4_Pin|IR_3_Pin|IR_2_Pin|IR_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : IR1_Pin */
-  GPIO_InitStruct.Pin = IR1_Pin;
+  /*Configure GPIO pin : IR5_Pin */
+  GPIO_InitStruct.Pin = IR_5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(IR1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(IR_5_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
