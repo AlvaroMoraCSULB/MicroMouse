@@ -50,7 +50,7 @@ static MotorVector_t velocitySetpoint = {100, 100};
 static MotorVector_t setpointErrorPrev;
 
 static EncoderCount_t encoderCountsTraveled = {0, 0};
-static double targetDistance = 540; //90*MM_PER_DEGREE;
+static double targetDistance = 141.3716694; //90*MM_PER_DEGREE;
 
 uint16_t PIDLogicCounter = 0;
 
@@ -231,8 +231,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		errorSum.right = proportionalTerm.right + derivativeTerm.right + integralTerm.right;
 
 		// Update motor speeds
-		/*SetMotorSpeedLeft(errorSum.left);
-		SetMotorSpeedRight(errorSum.right);*/
+		SetMotorSpeedLeft(errorSum.left);
+		SetMotorSpeedRight(errorSum.right);
 
 
 		//TrapezoidalDistance();
