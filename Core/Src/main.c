@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "motors.h"
+#include "distance.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,9 +59,9 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM1_Init(void);
-static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_TIM9_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -73,23 +74,23 @@ uint16_t states = 0;
 uint16_t prev_state = 1;
 uint16_t speed = 1;
 volatile uint16_t rxdata[5] = {0};
-uint16_t ir_data[5] = {0};
+uint16_t ir_data[3] = {0};
 
 uint16_t encoderCounterTimer3 = 0;
 uint16_t encoderCounterTimer4 = 0;
 
 //timer handler handles this
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
-{
-    if (htim->Instance == TIM3) {
-        // Handle Timer 3 encoder input
-    	encoderCounterTimer3 = __HAL_TIM_GET_COUNTER(htim);
-    }
-    else if (htim->Instance == TIM4) {
-        // Handle Timer 4 encoder input
-    	encoderCounterTimer4 = __HAL_TIM_GET_COUNTER(htim);
-    }
-}
+//void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+//{
+//    if (htim->Instance == TIM3) {
+//        // Handle Timer 3 encoder input
+//    	encoderCounterTimer3 = __HAL_TIM_GET_COUNTER(htim);
+//    }
+//    else if (htim->Instance == TIM4) {
+//        // Handle Timer 4 encoder input
+//    	encoderCounterTimer4 = __HAL_TIM_GET_COUNTER(htim);
+//    }
+//}
 // proto type code for wheels
 //void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 //{
@@ -124,18 +125,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
-
-
-
-
-
-
-
-
-
-
-   	HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -153,9 +143,9 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
-  MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM9_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
@@ -172,8 +162,8 @@ int main(void)
   __HAL_TIM_SET_COMPARE(&htim9, TIM_CHANNEL_2, 0);
   HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
 
-  HAL_ADC_Start_DMA(&hadc1, (uint16_t*)ir_data[0], 5); // adc handler initialization
-  ADC1->CR2 |= ADC_CR2_DDS;
+//  HAL_ADC_Start_DMA(&hadc1, (uint16_t*)ir_data, 3); // adc handler initialization
+//  ADC1->CR2 |= ADC_CR2_DDS;
 
   /*
     * Motor driving.
@@ -183,10 +173,12 @@ int main(void)
    init_default_motor(&rmotor, &htim1, TIM_CHANNEL_2, &htim1, TIM_CHANNEL_1);
    init_default_motor(&lmotor, &htim9, TIM_CHANNEL_1, &htim9, TIM_CHANNEL_2);
 
+   DistanceInit(&hadc1, &hdma_adc1);
+
    //drive_motor(&rmotor, rdir);
    //drive_motor(&lmotor, ldir);
 
-   uint32_t timer = 0;
+//   uint32_t timer = 0;
 
   /* USER CODE END 2 */
 
@@ -247,9 +239,9 @@ int main(void)
      HAL_GPIO_WritePin(GPIOA, IR_2_Pin|IR_1_Pin|IR_3_Pin|IR_4_Pin, SET);
      HAL_GPIO_WritePin(GPIOC, IR_1_Pin|IR_5_Pin, SET);
 
-     /* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-     /* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
    }
 
 //   void pid_loop() {
@@ -299,9 +291,8 @@ int main(void)
 //               break;
 //       }
 //   }
-   /* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
-
 
 /**
   * @brief System Clock Configuration
@@ -377,7 +368,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 5;
+  hadc1.Init.NbrOfConversion = 3;
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
@@ -387,7 +378,7 @@ static void MX_ADC1_Init(void)
 
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -408,24 +399,6 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_8;
   sConfig.Rank = 3;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_9;
-  sConfig.Rank = 4;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_1;
-  sConfig.Rank = 5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -526,11 +499,11 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 65535;
+  htim3.Init.Period = 4999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
-  sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+  sConfig.IC1Polarity = TIM_ICPOLARITY_FALLING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
   sConfig.IC1Filter = 0;
@@ -578,8 +551,8 @@ static void MX_TIM4_Init(void)
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
-  sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+  sConfig.IC1Polarity = TIM_ICPOLARITY_FALLING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
   sConfig.IC1Filter = 0;
@@ -689,28 +662,28 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(IR_5_GPIO_Port, IR_5_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(MCU_LED_GPIO_Port, MCU_LED_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : IR4_Pin IR3_Pin IR2_Pin IR1_Pin */
+  /*Configure GPIO pins : IR_4_Pin IR_3_Pin IR_2_Pin IR_1_Pin */
   GPIO_InitStruct.Pin = IR_4_Pin|IR_3_Pin|IR_2_Pin|IR_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : IR5_Pin */
+  /*Configure GPIO pin : IR_5_Pin */
   GPIO_InitStruct.Pin = IR_5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(IR_5_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  /*Configure GPIO pin : MCU_LED_Pin */
+  GPIO_InitStruct.Pin = MCU_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(MCU_LED_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
